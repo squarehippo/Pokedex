@@ -33,20 +33,20 @@ class PokemonDetailViewController: UIViewController {
     }
     
     override func viewDidLoad() {
-        nameLabel.text = pokemon.name.uppercaseFirst
+        nameLabel.text = pokemon.name.capitalizedString
         mainImage.image = UIImage(named: String(pokemon.pokedexId))
         pokedexIdContent.text = String(pokemon.pokedexId)
+        
+        pokemon.downloadPokemonDetails { () -> () in
+            self.updateUI()
+            print(self.pokemon.weight)
+        }
+
+    }
+    
+    func updateUI() {
+        weightContent.text = pokemon.weight
     }
 }
 
-extension String {
-    var first: String {
-        return String(characters.prefix(1))
-    }
-    var last: String {
-        return String(characters.suffix(1))
-    }
-    var uppercaseFirst: String {
-        return first.uppercaseString + String(characters.dropFirst())
-    }
-}
+

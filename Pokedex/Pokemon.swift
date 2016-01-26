@@ -6,7 +6,7 @@
 //  Copyright © 2016 GetRunGo. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 class Pokemon {
     private var _name: String!
@@ -18,6 +18,8 @@ class Pokemon {
     private var _weight: String!
     private var _attack: String!
     private var _nextEvolutionText: String!
+    private var _pokemanURL: String!
+    private var _descriptionURL: String!
     
     var name: String {
         return _name
@@ -27,9 +29,89 @@ class Pokemon {
         return _pokedexId
     }
     
+    var weight: String {
+        if _weight == nil {
+         _weight = ""
+        }
+        return _weight
+    }
+    
     init(name: String, pokedexId: Int) {
         _name = name
         _pokedexId = pokedexId
+        _pokemanURL = "\(POKE_URL)/api/v1/pokemon/\(self._pokedexId)/"
     }
+    
+    func downloadPokemonDetails(completed: DownloadComplete) {
+        
+        let url = NSURL(string: _pokemanURL)!
+        let session = NSURLSession.sharedSession()
+        let task = session.dataTaskWithURL(url) { (data, response, error) -> Void in
+            
+            do {
+                let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
+                
+                    if let weight = dict["weight"] as? String {
+                        self._weight = weight
+                    }
+                    if let height = dict["height"] as? String {
+                        self._height = height
+                    }
+                    if let attack = dict["attack"] as? Int {
+                        self._attack = String(attack)
+                    }
+                    if let defense = dict["defense"] as? Int {
+                        self._defense = String(defense)
+                    }
+                    if let types = dict["types"] as? [Dictionary<String, String>] where types.count > 0 {
+                        for i in 0..<types.count {
+                            if let curType = types[i]["name"] {
+                                if i == 0 {
+                                    self._type = curType.capitalizedString
+                                } else {
+                                    self._type! += "/\(curType.capitalizedString)"
+                                }
+                            }
+                        }
+                    } else {
+                        self._type = "N/A"
+                    }
+                
+                    if let descriptionArray = dict["descriptions"] as? [Dictionary<String, String>] where descriptionArray.count > 0 {
+                        if let uri = descriptionArray[0]["resource_uri"] {
+                            self._descriptionURL = String(NSURL(string: "\(POKE_URL)\(uri)")!)
+                        }
+                    }
+                
+        let url2 = NSURL(string: self._descriptionURL)!
+        let task = session.dataTaskWithURL(url2) { (data, response, error) -> Void in
+            
+            do {
+                let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
+                
+                if let description = dict["description"] as? String! {
+                    self._description = description
+                    print(self._description)
+                }
+            }
+            catch {
+                print("json error: \(error)")
+            }
+        }
+        completed()
+        task.resume()
+        }
+        catch {
+            print("json error: \(error)")
+        }
+            }
+            task.resume()
+    }
+    
+    
+
+
 }
+
+
 
