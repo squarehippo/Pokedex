@@ -46,6 +46,10 @@ class PokemonDetailViewController: UIViewController {
     
     func updateUI() {
         weightContent.text = pokemon.weight
+        descriptionContent.text = pokemon.descript
+        heightContent.text = pokemon.height
+        
+        print("description = \(pokemon.descript)")
     }
 }
 

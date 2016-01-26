@@ -36,6 +36,22 @@ class Pokemon {
         return _weight
     }
     
+    var descript: String {
+        if _description == nil {
+             _description = ""
+        }
+        return _description
+    }
+    
+    var height: String {
+        if _height == nil {
+            _height = ""
+        }
+        return _height
+    }
+    
+    
+    
     init(name: String, pokedexId: Int) {
         _name = name
         _pokedexId = pokedexId
@@ -91,14 +107,13 @@ class Pokemon {
                 
                 if let description = dict["description"] as? String! {
                     self._description = description
-                    print(self._description)
+                    completed()
                 }
             }
             catch {
                 print("json error: \(error)")
             }
         }
-        completed()
         task.resume()
         }
         catch {
