@@ -93,34 +93,38 @@ class Pokemon {
                         self._type = "N/A"
                     }
                 
-                    if let descriptionArray = dict["descriptions"] as? [Dictionary<String, String>] where descriptionArray.count > 0 {
-                        if let uri = descriptionArray[0]["resource_uri"] {
-                            self._descriptionURL = String(NSURL(string: "\(POKE_URL)\(uri)")!)
-                        }
-                    }
-                
-        let url2 = NSURL(string: self._descriptionURL)!
-        let task = session.dataTaskWithURL(url2) { (data, response, error) -> Void in
-            
-            do {
-                let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
-                
-                if let description = dict["description"] as? String! {
-                    self._description = description
-                    completed()
+            if let descriptionArray = dict["descriptions"] as? [Dictionary<String, String>] where descriptionArray.count > 0 {
+                if let uri = descriptionArray[0]["resource_uri"] {
+                    self._descriptionURL = String(NSURL(string: "\(POKE_URL)\(uri)")!)
                 }
+            }
+        
+            let url2 = NSURL(string: self._descriptionURL)!
+            let task = session.dataTaskWithURL(url2) { (data, response, error) -> Void in
+                
+                do {
+                    let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
+                    
+                    if let description = dict["description"] as? String! {
+                        self._description = description
+                        completed()
+                    }
+                    
+                }
+                    
+                catch {
+                    print("json error: \(error)")
+                }
+                
+            }
+                
+            task.resume()
             }
             catch {
                 print("json error: \(error)")
             }
         }
         task.resume()
-        }
-        catch {
-            print("json error: \(error)")
-        }
-            }
-            task.resume()
     }
     
     
