@@ -37,19 +37,29 @@ class PokemonDetailViewController: UIViewController {
         mainImage.image = UIImage(named: String(pokemon.pokedexId))
         pokedexIdContent.text = String(pokemon.pokedexId)
         
+        
         pokemon.downloadPokemonDetails { () -> () in
-            self.updateUI()
-            print(self.pokemon.weight)
+            dispatch_async(dispatch_get_main_queue()) {
+                self.updateUI()
+            }
+            
         }
 
     }
     
     func updateUI() {
-        weightContent.text = pokemon.weight
+
         descriptionContent.text = pokemon.descript
+        weightContent.text = pokemon.weight
         heightContent.text = pokemon.height
+        baseAttackContent.text = pokemon.attack
+        defenseContent.text = pokemon.defense
+        typeContent.text = pokemon.type
         
-        print("description = \(pokemon.descript)")
+        
+        
+
+        
     }
 }
 

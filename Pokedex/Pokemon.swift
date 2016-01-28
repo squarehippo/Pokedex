@@ -33,7 +33,7 @@ class Pokemon {
         if _weight == nil {
          _weight = ""
         }
-        return _weight
+        return _weight  
     }
     
     var descript: String {
@@ -50,16 +50,36 @@ class Pokemon {
         return _height
     }
     
+    var attack: String {
+        if _attack == nil {
+            _attack = ""
+        }
+        return _attack
+    }
+    
+    var defense: String {
+        if _defense == nil {
+            _defense = ""
+        }
+        return _defense
+    }
+    
+    var type: String {
+        if _type == nil {
+            _type = ""
+        }
+        return _type
+    }
+    
     
     
     init(name: String, pokedexId: Int) {
         _name = name
         _pokedexId = pokedexId
-        _pokemanURL = "\(POKE_URL)/api/v1/pokemon/\(self._pokedexId)/"
+        _pokemanURL = "\(POKE_URL)\(POKEMON)\(self._pokedexId)/"
     }
     
     func downloadPokemonDetails(completed: DownloadComplete) {
-        
         let url = NSURL(string: _pokemanURL)!
         let session = NSURLSession.sharedSession()
         let task = session.dataTaskWithURL(url) { (data, response, error) -> Void in
@@ -67,58 +87,56 @@ class Pokemon {
             do {
                 let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
                 
-                    if let weight = dict["weight"] as? String {
-                        self._weight = weight
-                    }
-                    if let height = dict["height"] as? String {
-                        self._height = height
-                    }
-                    if let attack = dict["attack"] as? Int {
-                        self._attack = String(attack)
-                    }
-                    if let defense = dict["defense"] as? Int {
-                        self._defense = String(defense)
-                    }
-                    if let types = dict["types"] as? [Dictionary<String, String>] where types.count > 0 {
-                        for i in 0..<types.count {
-                            if let curType = types[i]["name"] {
-                                if i == 0 {
-                                    self._type = curType.capitalizedString
-                                } else {
-                                    self._type! += "/\(curType.capitalizedString)"
-                                }
+                if let weight = dict["weight"] as? String {
+                    self._weight = weight
+                }
+                if let height = dict["height"] as? String {
+                    self._height = height
+                }
+                if let attack = dict["attack"] as? Int {
+                    self._attack = String(attack)
+                }
+                if let defense = dict["defense"] as? Int {
+                    self._defense = String(defense)
+                }
+                if let types = dict["types"] as? [Dictionary<String, String>] where types.count > 0 {
+                    for i in 0..<types.count {
+                        if let curType = types[i]["name"] {
+                            if i == 0 {
+                                self._type = curType.capitalizedString
+                            } else {
+                                self._type! += "/\(curType.capitalizedString)"
                             }
                         }
-                    } else {
-                        self._type = "N/A"
                     }
-                
-            if let descriptionArray = dict["descriptions"] as? [Dictionary<String, String>] where descriptionArray.count > 0 {
-                if let uri = descriptionArray[0]["resource_uri"] {
-                    self._descriptionURL = String(NSURL(string: "\(POKE_URL)\(uri)")!)
+                } else {
+                    self._type = "N/A"
                 }
-            }
-        
-            let url2 = NSURL(string: self._descriptionURL)!
-            let task = session.dataTaskWithURL(url2) { (data, response, error) -> Void in
                 
-                do {
-                    let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
-                    
-                    if let description = dict["description"] as? String! {
-                        self._description = description
-                        completed()
+                if let descriptionArray = dict["descriptions"] as? [Dictionary<String, String>] where descriptionArray.count > 0 {
+                    if let uri = descriptionArray[0]["resource_uri"] {
+                        self._descriptionURL = String(NSURL(string: "\(POKE_URL)\(uri)")!)
                     }
-                    
-                }
-                    
-                catch {
-                    print("json error: \(error)")
                 }
                 
-            }
-                
-            task.resume()
+                let url2 = NSURL(string: self._descriptionURL)!
+                let task = session.dataTaskWithURL(url2) { (data, response, error) -> Void in
+                    
+                    do {
+                        let dict = try NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.AllowFragments) as! [String:AnyObject]
+                        
+                        if let description = dict["description"] as? String! {
+                            let newString1 = description.stringByReplacingOccurrencesOfString("POKMON", withString: "Pokémon", options: NSStringCompareOptions.LiteralSearch, range: nil)
+                            let newString2 = newString1.stringByReplacingOccurrencesOfString("Pokémons", withString: "Pokémon's", options: NSStringCompareOptions.LiteralSearch, range: nil)
+                            self._description = newString2
+                            completed()
+                        }
+                    }
+                    catch {
+                        print("json error: \(error)")
+                    }
+                }
+                task.resume()
             }
             catch {
                 print("json error: \(error)")
@@ -126,10 +144,6 @@ class Pokemon {
         }
         task.resume()
     }
-    
-    
-
-
 }
 
 
